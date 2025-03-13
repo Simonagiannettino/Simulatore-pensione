@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulatore Pensionistico</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: auto;
+            text-align: center;
+            background-color: #f0f8ff;
+            padding: 20px;
+        }
+        form {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px gray;
+        }
+        input, select, button {
+            margin: 10px;
+            padding: 8px;
+            width: 90%;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #output {
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px gray;
+        }
+    </style>
+    <script>
+        function calcolaPensione() {
+            let eta = parseInt(document.getElementById("eta").value);
+            let reddito = parseFloat(document.getElementById("reddito").value);
+            let anniContributi = parseInt(document.getElementById("anniContributi").value);
+            let percentualeRisparmio = parseFloat(document.getElementById("percentualeRisparmio").value) / 100;
+            let rendimento = parseFloat(document.getElementById("rendimento").value) / 100 || 0.03;
+            let anniResidui = 67 - eta;
+
+            let pensionePubblica = reddito * 0.55;
+            let contributoAnnuo = reddito * percentualeRisparmio;
+            let capitaleAccumulato = 0;
+
+            for (let i = 0; i < anniResidui; i++) {
+                capitaleAccumulato += contributoAnnuo;
+                capitaleAccumulato *= (1 + rendimento);
+            }
+
+            let pensioneIntegrativa = capitaleAccumulato * 0.05;
+            let vantaggiFiscali = Math.min(contributoAnnuo, 5164.57) * 0.23;
+            let totalePensione = pensionePubblica + pensioneIntegrativa;
+
+            let descrizione = "";
+            if (percentualeRisparmio < 0.03) {
+                descrizione = "La tua allocazione è molto bassa. Potresti considerare di aumentare il tuo contributo per garantire maggiore stabilità futura.";
+            } else if (percentualeRisparmio >= 0.03 && percentualeRisparmio <= 0.05) {
+                descrizione = "La tua allocazione è moderata. Questo potrebbe aiutarti a integrare la pensione pubblica con un buon equilibrio tra rischio e rendimento.";
+            } else {
+                descrizione = "Ottima scelta! Un'allocazione sopra il 5% garantisce una maggiore sicurezza finanziaria nel lungo termine.";
+            }
+
+            document.getElementById("output").innerHTML = `
+                <h3>Risultati della Simulazione</h3>
+                <p><strong>Pensione Pubblica Stimata:</strong> € ${pensionePubblica.toFixed(2)} annui</p>
+                <p><strong>Pensione Integrativa Stimata:</strong> € ${pensioneIntegrativa.toFixed(2)} annui</p>
+                <p><strong>Totale Pensione Prevista:</strong> € ${totalePensione.toFixed(2)} annui</p>
+                <p><strong>Vantaggi Fiscali Stimati:</strong> € ${vantaggiFiscali.toFixed(2)} annui</p>
+                <p>${descrizione}</p>
+                <button onclick="scaricaReport()">Scarica Report</button>
+            `;
+        }
+
+        function scaricaReport() {
+            let output = document.getElementById("output").innerText;
+            let blob = new Blob([output], { type: "text/plain" });
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "Report_Pensione.txt";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</head>
+<body>
+    <h1>Simulatore Pensionistico</h1>
+    <form onsubmit="event.preventDefault(); calcolaPensione();">
+        <label>Età Attuale: <input type="number" id="eta" required></label><br>
+        <label>Reddito Annuo Lordo (€): <input type="number" id="reddito" required></label><br>
+        <label>Periodo Contributivo Già Maturato (anni): <input type="number" id="anniContributi" required></label><br>
+        <label>Percentuale di Reddito da Investire (%): <input type="number" id="percentualeRisparmio" required></label><br>
+        <label>Rendimento Annuo Medio Stimato (%): <input type="number" id="rendimento"></label><br>
+        <button type="submit">Calcola</button>
+    </form>
+    <div id="output"></div>
+
+    <h2>FAQ</h2>
+    <p><strong>Se investo il 5% del mio reddito, quanto accumulo?</strong><br>
+       Assumendo un rendimento del 3%, potresti accumulare un capitale considerevole e ottenere una rendita annua integrativa.</p>
+    <p><strong>Cosa succede se cambio lavoro?</strong><br>
+       Il tuo fondo pensione può essere trasferito ad altri gestori.</p>
+    <p><strong>Posso versare il TFR?</strong><br>
+       Sì, destinare il TFR può aumentare significativamente il capitale accumulato.</p>
+</body>
+</html>
